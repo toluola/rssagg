@@ -1,0 +1,7 @@
+version: 1
+packages:
+  - path: "/internal/database"
+    name: "rssagg"
+    engine: "postgresql"
+    schema: "sql/schema"
+    queries: "sql/queries"
