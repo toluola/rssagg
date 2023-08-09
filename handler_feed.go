@@ -10,9 +10,10 @@ import (
 	rssagg "github.com/toluola/rssagg/internal/database"
 )
 
-func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
+func (apiCfg *apiConfig) handlerCreateFeed(w http.ResponseWriter, r *http.Request, user rssagg.User) {
 	type parameters struct {
 		Name string `json:"name"`
+		Url  string `json:"url"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -23,20 +24,31 @@ func (apiCfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	user, err := apiCfg.DB.CreateUser(r.Context(), rssagg.CreateUserParams{
+	feed, err := apiCfg.DB.CreateFeed(r.Context(), rssagg.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 		Name:      params.Name,
+		Url:       params.Url,
+		UserID:    user.ID,
 	})
 
 	if err != nil {
 		responseWithError(w, 400, fmt.Sprintf("Could not create user: %v", err))
+		return
 	}
 
-	respondWithJson(w, 201, databaseDbtoUsers(user))
+	respondWithJson(w, 201, databaseFeedbtoFeeds(feed))
 }
 
-func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, user rssagg.User) {
-	respondWithJson(w, 200, databaseDbtoUsers(user))
+func (apiCfg *apiConfig) handlerGetFeeds(w http.ResponseWriter, r *http.Request) {
+
+	feeds, err := apiCfg.DB.GetFeeds(r.Context())
+
+	if err != nil {
+		responseWithError(w, 400, fmt.Sprintf("Could not create user: %v", err))
+		return
+	}
+
+	respondWithJson(w, 200, databaseFeedstoFeeds(feeds))
 }
